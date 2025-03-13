@@ -15,7 +15,9 @@
     "@langchain/core": "^0.3.42",
     "@langchain/langgraph": "^0.2.55",
     "@langchain/openai": "^0.4.4",
+    "consola": "^3.4.0",
     "langchain": "^0.3.19",
+    "langsmith": "^0.3.13",
     "nuxt": "^3.16.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
@@ -25,7 +27,6 @@
     "@antfu/eslint-config": "^4.10.1",
     "eslint": "^9.10.0",
     "eslint-plugin-format": ">=0.1.0",
-    "langsmith": "^0.3.13",
     "nuxi": "^3.23.0"
   }
 }
