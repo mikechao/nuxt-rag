@@ -4,5 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   runtimeConfig: {
     openaiAPIKey: '',
+    langsmithAPIKey: '',
+    browserbaseAPIKey: '',
   },
 })
