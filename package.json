@@ -15,6 +15,7 @@
     "@langchain/core": "^0.3.42",
     "@langchain/langgraph": "^0.2.55",
     "@langchain/openai": "^0.4.4",
+    "@langchain/textsplitters": "^0.1.0",
     "consola": "^3.4.0",
     "langchain": "^0.3.19",
     "langsmith": "^0.3.13",
