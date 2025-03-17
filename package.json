@@ -16,6 +16,7 @@
     "@langchain/community": "^0.3.35",
     "@langchain/core": "^0.3.42",
     "@langchain/langgraph": "^0.2.55",
+    "@langchain/langgraph-checkpoint-postgres": "^0.0.4",
     "@langchain/openai": "^0.4.4",
     "@langchain/textsplitters": "^0.1.0",
     "@types/pg": "^8.11.11",

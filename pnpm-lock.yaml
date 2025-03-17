@@ -23,6 +23,9 @@ importers:
       '@langchain/langgraph':
         specifier: ^0.2.55
         version: 0.2.55(@langchain/core@0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2)))
+      '@langchain/langgraph-checkpoint-postgres':
+        specifier: ^0.0.4
+        version: 0.0.4(@langchain/core@0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2)))(@langchain/langgraph-checkpoint@0.0.16(@langchain/core@0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2))))
       '@langchain/openai':
         specifier: ^0.4.4
         version: 0.4.4(@langchain/core@0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2)))(ws@8.18.1)
@@ -948,6 +951,13 @@ packages:
   '@langchain/core@0.3.42':
     resolution: {integrity: sha512-pT/jC5lqWK3YGDq8dQwgKoa6anqAhMtG1x5JbnrOj9NdaLeBbCKBDQ+/Ykzk3nZ8o+0UMsaXNZo7IVL83VVjHg==}
     engines: {node: '>=18'}
+
+  '@langchain/langgraph-checkpoint-postgres@0.0.4':
+    resolution: {integrity: sha512-KLiST5yBUO5pGgcTMrpPUBgijM3E8+7SKmBiD9ddJGNzhCLaFcgbpvgjySvdDAoEAxDn1wJDE72U4yh5rFS/OA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.2.31 <0.4.0'
+      '@langchain/langgraph-checkpoint': ~0.0.15
 
   '@langchain/langgraph-checkpoint@0.0.16':
     resolution: {integrity: sha512-B50l7w9o9353drHsdsD01vhQrCJw0eqvYeXid7oKeoj1Yye+qY90r97xuhiflaYCZHM5VEo2oaizs8oknerZsQ==}
@@ -5553,6 +5563,14 @@ snapshots:
     transitivePeerDependencies:
       - openai
 
+  '@langchain/langgraph-checkpoint-postgres@0.0.4(@langchain/core@0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2)))(@langchain/langgraph-checkpoint@0.0.16(@langchain/core@0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2))))':
+    dependencies:
+      '@langchain/core': 0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2))
+      '@langchain/langgraph-checkpoint': 0.0.16(@langchain/core@0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2)))
+      pg: 8.14.1
+    transitivePeerDependencies:
+      - pg-native
+
   '@langchain/langgraph-checkpoint@0.0.16(@langchain/core@0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2)))':
     dependencies:
       '@langchain/core': 0.3.42(openai@4.87.3(ws@8.18.1)(zod@3.24.2))
@@ -7709,7 +7727,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.8.3)
+      retry-axios: 2.6.0(axios@1.8.3(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -9305,7 +9323,7 @@ snapshots:
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
-  retry-axios@2.6.0(axios@1.8.3):
+  retry-axios@2.6.0(axios@1.8.3(debug@4.4.0)):
     dependencies:
       axios: 1.8.3(debug@4.4.0)
 
