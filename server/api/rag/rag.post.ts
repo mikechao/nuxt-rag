@@ -151,7 +151,7 @@ export default defineLazyEventHandler(async () => {
     const threadConfig = { configurable: { thread_id: 'abc123' } }
     const input = { messages: [{ role: 'user', content: question }] }
     const result = await graph.invoke(input, threadConfig)
-    consola.info({ tag: 'eventHandler', message: `Result: ${JSON.stringify(result)}` })
+    consola.info({ tag: 'eventHandler', message: `Result: ${JSON.stringify(result.messages[result.messages.length - 1])}` })
     return result.messages[result.messages.length - 1].content
   })
 })
