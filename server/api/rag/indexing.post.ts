@@ -1,15 +1,16 @@
 import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
-import { PGVectorStore } from '@langchain/community/vectorstores/pgvector'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
 import consola from 'consola'
-import pg from 'pg'
 import { z } from 'zod'
+import { pgvectorStore } from '~/server/util/pgvectorStore'
 
 export default defineLazyEventHandler(async () => {
   const inputSchema = z.object({
-    url: z.string().min(1),
+    urls: z.array(z.string().min(1)).nonempty(),
   })
+  const runtimeConfig = useRuntimeConfig()
+  const openaiAPIKey = runtimeConfig.openaiAPIKey
   return defineEventHandler(async (event) => {
     const body = await readBody(event)
     const parsedBody = inputSchema.safeParse(body)
@@ -22,50 +23,36 @@ export default defineLazyEventHandler(async () => {
         message: JSON.stringify(formattedError) || 'Invalid input',
       })
     }
-    const { url } = parsedBody.data
-    const runtimeConfig = useRuntimeConfig()
-    const openaiAPIKey = runtimeConfig.openaiAPIKey
-    consola.info({ tag: 'eventHandler', message: `Received URL: ${url}` })
+    const { urls } = parsedBody.data
+    consola.info({ tag: 'eventHandler', message: `Received URL: ${urls}` })
 
-    const pTagSelector = 'p'
-    const cheerioLoader = new CheerioWebBaseLoader(
-      url,
-      {
-        selector: pTagSelector,
-      },
+    const before = performance.now()
+    const docs = await Promise.all(
+      urls.map(url => new CheerioWebBaseLoader(url).load()),
     )
-    const docs = await cheerioLoader.load()
+    const after = performance.now()
+    consola.info({ tag: 'eventHandler', message: `Loaded ${docs.length} documents in ${after - before}ms` })
 
+    const beforeSplit = performance.now()
+    const docsList = docs.flat()
     const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-      chunkOverlap: 200,
+      chunkSize: 500,
+      chunkOverlap: 50,
     })
-    const allSplits = await splitter.splitDocuments(docs)
+    const allSplits = await splitter.splitDocuments(docsList)
+    const afterSplit = performance.now()
+    consola.info({ tag: 'eventHandler', message: `Split ${allSplits.length} documents in ${afterSplit - beforeSplit}ms` })
 
+    const beforeEmbedding = performance.now()
     const embeddings = new OpenAIEmbeddings({
       model: 'text-embedding-3-large',
       apiKey: openaiAPIKey,
     })
-
-    const { Pool } = pg
-    const pool = new Pool({
-      host: 'localhost',
-      user: 'dbuser',
-      password: 'dbpassword',
-      database: 'nuxtragdb',
-      port: 5432,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    })
-
-    const vectorStore = await PGVectorStore.initialize(embeddings, {
-      pool,
-      tableName: 'rag_vectors',
-      dimensions: 3072,
-    })
-
+    const vectorStore = await pgvectorStore(embeddings)
     await vectorStore.addDocuments(allSplits)
+    const afterEmbedding = performance.now()
+    consola.info({ tag: 'eventHandler', message: `Added ${allSplits.length} documents to the vector store in ${afterEmbedding - beforeEmbedding}ms` })
+
     return `Successfully added ${allSplits.length} documents to the vector store. ${vectorStore.collectionName}`
   })
 })
