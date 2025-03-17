@@ -9,6 +9,7 @@ import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai'
 import consola from 'consola'
 import pg from 'pg'
 import { z } from 'zod'
+import { postgresCheckpointer } from '~/server/util/postgresCheckpointer'
 
 export default defineLazyEventHandler(async () => {
   const inputSchema = z.object({
@@ -129,7 +130,8 @@ export default defineLazyEventHandler(async () => {
     .addEdge('tools', 'generate')
     .addEdge('generate', '__end__')
 
-  const graph = graphBuilder.compile()
+  const checkpointer = await postgresCheckpointer()
+  const graph = graphBuilder.compile({ checkpointer })
 
   return defineEventHandler(async (event) => {
     const body = await readBody(event)
@@ -146,9 +148,10 @@ export default defineLazyEventHandler(async () => {
 
     const { question } = parsedBody.data
     consola.info({ tag: 'eventHandler', message: `Received question: ${question}` })
-    const inputs = { question }
-    const result = await graph.invoke(inputs)
+    const threadConfig = { configurable: { thread_id: 'abc123' } }
+    const input = { messages: [{ role: 'user', content: question }] }
+    const result = await graph.invoke(input, threadConfig)
     consola.info({ tag: 'eventHandler', message: `Result: ${JSON.stringify(result)}` })
-    return result.answer
+    return result.messages[result.messages.length - 1].content
   })
 })
