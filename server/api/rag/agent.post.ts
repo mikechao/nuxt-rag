@@ -1,4 +1,4 @@
-import { HumanMessage, type AIMessage, type BaseMessage } from '@langchain/core/messages'
+import { AIMessage, HumanMessage, ToolMessage, type BaseMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph'
 import { ToolNode } from '@langchain/langgraph/prebuilt'
@@ -20,6 +20,7 @@ export default defineLazyEventHandler(async () => {
       reducer: (x, y) => x.concat(y),
       default: () => [],
     }),
+    question: Annotation<string>
   })
 
   const tool = createRetrieverTool(
@@ -32,6 +33,15 @@ export default defineLazyEventHandler(async () => {
   )
   const tools = [tool]
   const toolNode = new ToolNode<typeof GraphState.State>(tools)
+
+  async function retrieve(state: typeof GraphState.State) {
+    consola.log('---RETRIEVE---')
+    const docs = await tool.invoke({ query: state.question })
+    consola.log('---RETRIEVE SUCCESS---')
+    return {
+      messages: [new ToolMessage(docs)],
+    }
+  }
 
   /**
    * Decides whether the agent should retrieve more information or end the process.
@@ -144,7 +154,7 @@ export default defineLazyEventHandler(async () => {
  * @returns {Promise<Partial<typeof GraphState.State>>} - The updated state with the new message added to the list of messages.
  */
 async function agent(state: typeof GraphState.State): Promise<Partial<typeof GraphState.State>> {
-  console.log("---CALL AGENT---");
+  consola.log("---CALL AGENT---");
 
   const { messages } = state;
   // Find the AIMessage which contains the `give_relevance_score` tool call,
@@ -197,6 +207,7 @@ Formulate an improved question:`,
   const response = await prompt.pipe(model).invoke({ question });
   return {
     messages: [response],
+    question: response.content as string,
   };
 }
 
@@ -211,7 +222,7 @@ async function generate(state: typeof GraphState.State): Promise<Partial<typeof 
   const { messages } = state;
   const question = messages[0].content as string;
   // Extract the most recent ToolMessage
-  const lastToolMessage = messages.slice().reverse().find((msg) => msg._getType() === "tool");
+  const lastToolMessage = messages.slice().reverse().find((msg) => msg.getType() === "tool");
   if (!lastToolMessage) {
     throw new Error("No tool message found in the conversation history");
   }
@@ -224,9 +235,9 @@ Context: {context}
 Answer:`)
 
   const llm = new ChatOpenAI({
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     temperature: 0,
-    streaming: true,
+    apiKey: openaiAPIKey,
   });
 
   const ragChain = prompt.pipe(llm);
@@ -245,7 +256,7 @@ Answer:`)
 const workflow = new StateGraph(GraphState)
   // Define the nodes which we'll cycle between.
   .addNode("agent", agent)
-  .addNode("retrieve", toolNode)
+  .addNode("retrieve", retrieve)
   .addNode("gradeDocuments", gradeDocuments)
   .addNode("rewrite", rewrite)
   .addNode("generate", generate)
@@ -257,7 +268,7 @@ const workflow = new StateGraph(GraphState)
     // Assess agent decision
     shouldRetrieve,
   )
-
+  workflow.addEdge("retrieve", "gradeDocuments")
   workflow.addConditionalEdges(
     "gradeDocuments",
     // Assess agent decision
@@ -294,6 +305,7 @@ const workflow = new StateGraph(GraphState)
     consola.info({ tag: 'eventHandler', message: `Received question: ${question}` })
     const inputs = {
       messages: [new HumanMessage(question)],
+      question
     }
     const response = await graph.invoke(inputs)
     consola.info({ tag: 'eventHandler', message: `Result: ${JSON.stringify(response.messages[response.messages.length - 1])}` })
