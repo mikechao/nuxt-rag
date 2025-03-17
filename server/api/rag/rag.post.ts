@@ -1,14 +1,11 @@
-import type { Document } from '@langchain/core/documents'
-import { PGVectorStore } from '@langchain/community/vectorstores/pgvector'
 import { AIMessage, HumanMessage, SystemMessage, ToolMessage } from '@langchain/core/messages'
-import { PromptTemplate } from '@langchain/core/prompts'
 import { tool } from '@langchain/core/tools'
-import { Annotation, MessagesAnnotation, StateGraph } from '@langchain/langgraph'
+import { MessagesAnnotation, StateGraph } from '@langchain/langgraph'
 import { ToolNode, toolsCondition } from '@langchain/langgraph/prebuilt'
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai'
 import consola from 'consola'
-import pg from 'pg'
 import { z } from 'zod'
+import { pgvectorStore } from '~/server/util/pgvectorStore'
 import { postgresCheckpointer } from '~/server/util/postgresCheckpointer'
 
 export default defineLazyEventHandler(async () => {
@@ -17,28 +14,13 @@ export default defineLazyEventHandler(async () => {
   })
   const runtimeConfig = useRuntimeConfig()
   const openaiAPIKey = runtimeConfig.openaiAPIKey
-  const { Pool } = pg
-  const pool = new Pool({
-    host: 'localhost',
-    user: 'dbuser',
-    password: 'dbpassword',
-    database: 'nuxtragdb',
-    port: 5432,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-  })
 
   const embeddings = new OpenAIEmbeddings({
     model: 'text-embedding-3-large',
     apiKey: openaiAPIKey,
   })
 
-  const vectorStore = await PGVectorStore.initialize(embeddings, {
-    pool,
-    tableName: 'rag_vectors',
-    dimensions: 3072,
-  })
+  const vectorStore = await pgvectorStore(embeddings)
 
   const llm = new ChatOpenAI({
     model: 'gpt-4o-mini',
