@@ -5,7 +5,7 @@ import { BaseConfigurationAnnotation, ensureBaseConfiguration } from '../shared/
 // This file contains sample documents to index, based on the following LangChain and LangGraph documentation pages:
 // - https://python.langchain.com/docs/concepts/
 // - https://langchain-ai.github.io/langgraph/concepts/low_level/
-const DEFAULT_DOCS_FILE = 'src/sample_docs.json'
+const DEFAULT_DOCS_FILE = 'server/template/sample_docs.json'
 
 /**
  * The configuration for the indexing process.
