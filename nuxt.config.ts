@@ -9,5 +9,6 @@ export default defineNuxtConfig({
     langsmithAPIKey: '',
     browserbaseAPIKey: '',
     postgresURL: process.env.NUXT_POSTGRES_URL,
+    tavilyAPIKey: process.env.NUXT_TAVILY_API_KEY,
   },
 })
