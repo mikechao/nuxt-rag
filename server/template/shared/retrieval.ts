@@ -23,7 +23,8 @@ async function makePgVectorRetriever(configuration: ReturnType<typeof ensureBase
 
   const vectorStore = await PGVectorStore.initialize(embeddingModel, {
     pool,
-    tableName: 'rag_vectors',
+    tableName: 'rag_template_vectors',
+    dimensions: 1536,
   })
   return vectorStore.asRetriever({ filter: configuration.searchKwargs || {} })
 }
@@ -47,7 +48,7 @@ function makeTextEmbeddings(modelName: string): Embeddings {
   const openaiAPIKey = process.env.NUXT_OPENAI_API_KEY
   switch (provider) {
     case 'openai':
-      return new OpenAIEmbeddings({ model, apiKey: openaiAPIKey })
+      return new OpenAIEmbeddings({ model, apiKey: openaiAPIKey, dimensions: 1536 })
     default:
       throw new Error(`Unsupported embedding provider: ${provider}`)
   }
