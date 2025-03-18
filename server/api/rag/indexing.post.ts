@@ -1,16 +1,13 @@
 import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio'
-import { OpenAIEmbeddings } from '@langchain/openai'
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
 import consola from 'consola'
 import { z } from 'zod'
-import { pgvectorStore } from '~/server/util/pgvectorStore'
+import { createEmbeddingsAndVectorStore } from '~/server/util/embeddingAndVectorStore'
 
 export default defineLazyEventHandler(async () => {
   const inputSchema = z.object({
     urls: z.array(z.string().min(1)).nonempty(),
   })
-  const runtimeConfig = useRuntimeConfig()
-  const openaiAPIKey = runtimeConfig.openaiAPIKey
   return defineEventHandler(async (event) => {
     const body = await readBody(event)
     const parsedBody = inputSchema.safeParse(body)
@@ -36,19 +33,15 @@ export default defineLazyEventHandler(async () => {
     const beforeSplit = performance.now()
     const docsList = docs.flat()
     const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 500,
-      chunkOverlap: 50,
+      chunkSize: 250,
+      chunkOverlap: 0,
     })
     const allSplits = await splitter.splitDocuments(docsList)
     const afterSplit = performance.now()
     consola.info({ tag: 'eventHandler', message: `Split ${allSplits.length} documents in ${afterSplit - beforeSplit}ms` })
 
     const beforeEmbedding = performance.now()
-    const embeddings = new OpenAIEmbeddings({
-      model: 'text-embedding-3-large',
-      apiKey: openaiAPIKey,
-    })
-    const vectorStore = await pgvectorStore(embeddings)
+    const { vectorStore } = await createEmbeddingsAndVectorStore()
     await vectorStore.addDocuments(allSplits)
     const afterEmbedding = performance.now()
     consola.info({ tag: 'eventHandler', message: `Added ${allSplits.length} documents to the vector store in ${afterEmbedding - beforeEmbedding}ms` })

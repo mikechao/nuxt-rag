@@ -22,7 +22,7 @@ export async function createEmbeddingsAndVectorStore(options?: {
   const embeddings = new OpenAIEmbeddings({
     model: options?.model || 'text-embedding-3-large',
     apiKey: options?.apiKey || openaiAPIKey,
-    dimensions: options?.dimensions || 3072,
+    dimensions: options?.dimensions || 3072, // dimensions have to match the same as the PGVectorStore
   })
 
   const vectorStore = await pgvectorStore(embeddings)
