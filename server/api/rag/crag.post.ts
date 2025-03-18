@@ -277,6 +277,6 @@ Answer:`)
     const config = { recursionLimit: 50 }
     const result = await graph.invoke(inputs, config)
     consola.info({ tag: 'eventHandler', message: `Result: ${JSON.stringify(result)}` })
-    return result.generation
+    return result
   })
 })
