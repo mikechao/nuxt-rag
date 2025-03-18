@@ -1,6 +1,7 @@
 import type { Embeddings } from '@langchain/core/embeddings'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import process from 'node:process'
 import { PGVectorStore } from '@langchain/community/vectorstores/pgvector'
 import { OpenAIEmbeddings } from '@langchain/openai'
 import pg from 'pg'
@@ -41,8 +42,9 @@ function makeTextEmbeddings(modelName: string): Embeddings {
     provider = modelName.slice(0, index)
     model = modelName.slice(index + 1)
   }
-  const runtimeConfig = useRuntimeConfig()
-  const openaiAPIKey = runtimeConfig.openaiAPIKey
+  // can't useRuntimeConfig here not inside a defineEventHandler
+  // const runtimeConfig = useRuntimeConfig()
+  const openaiAPIKey = process.env.NUXT_OPENAI_API_KEY
   switch (provider) {
     case 'openai':
       return new OpenAIEmbeddings({ model, apiKey: openaiAPIKey })
