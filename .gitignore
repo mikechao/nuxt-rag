@@ -25,3 +25,5 @@ logs
 
 notes.txt
 .vscode/
+# LangGraph API
+.langgraph_api
