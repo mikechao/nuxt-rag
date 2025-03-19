@@ -1,6 +1,7 @@
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
 import type { Document } from 'langchain/document'
+import { LocalFileCache } from 'langchain/cache/file_system'
 import { initChatModel } from 'langchain/chat_models/universal'
 
 export function formatDoc(doc: Document): string {
@@ -29,15 +30,17 @@ export function formatDocs(docs?: Document[]): string {
  */
 export async function loadChatModel(
   fullySpecifiedName: string,
+  useLocalCache: boolean = false,
 ): Promise<BaseChatModel> {
   const index = fullySpecifiedName.indexOf('/')
+  const cache = useLocalCache ? await LocalFileCache.create('rag-template-cache') : undefined
   if (index === -1) {
     // If there's no "/", assume it's just the model
-    return await initChatModel(fullySpecifiedName)
+    return await initChatModel(fullySpecifiedName, { cache })
   }
   else {
     const provider = fullySpecifiedName.slice(0, index)
     const model = fullySpecifiedName.slice(index + 1)
-    return await initChatModel(model, { modelProvider: provider })
+    return await initChatModel(model, { modelProvider: provider, cache })
   }
 }

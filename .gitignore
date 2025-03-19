@@ -27,3 +27,5 @@ notes.txt
 .vscode/
 # LangGraph API
 .langgraph_api
+
+rag-template-cache/

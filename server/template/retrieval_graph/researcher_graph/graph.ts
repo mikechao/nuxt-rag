@@ -24,7 +24,7 @@ async function generateQueries(
 
   const configuration = ensureAgentConfiguration(config)
   const model = (
-    await loadChatModel(configuration.queryModel)
+    await loadChatModel(configuration.queryModel, true)
   ).withStructuredOutput(Response)
   const messages: { role: string, content: string }[] = [
     { role: 'system', content: configuration.generateQueriesSystemPrompt },
