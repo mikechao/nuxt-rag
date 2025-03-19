@@ -27,14 +27,18 @@ docker run -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=dbpassword -e POSTGRES_D
 ```
 
 Where
--e POSTGRES_USER=myuser: Creates a database user
--e POSTGRES_PASSWORD=mypassword: Sets the user's password
--e POSTGRES_DB=mydatabase: Creates a new database
---name my_postgres: Names your container
--p 5432:5432: Maps the container's PostgreSQL port to your host
--d: Runs the container in detached mode
+|Param | Use |
+|:-----|:----|
+|-e POSTGRES_USER=myuser| Creates a database user |
+|-e POSTGRES_PASSWORD=mypassword| Sets the user's password|
+|-e POSTGRES_DB=mydatabase| Creates a new database|
+|--name my_postgres| Names your container |
+|-p 5432:5432| Maps the container's PostgreSQL port to your host|
+|-d| Runs the container in detached mode|
 
 Connect to the postgres instance using [pgAdmin](https://www.pgadmin.org/)
+
+### Enable pgvector extension
 
 Enable the pgvector extension by running
 ```sql
