@@ -34,6 +34,18 @@ Where
 -p 5432:5432: Maps the container's PostgreSQL port to your host
 -d: Runs the container in detached mode
 
+Connect to the postgres instance using [pgAdmin](https://www.pgadmin.org/)
+
+Enable the pgvector extension by running
+```sql
+CREATE EXTENSION vector;
+```
+
+To ensure pgvector is properly installed, run:
+```sql
+SELECT * FROM pg_extension;
+```
+
 ## LangGraph Server
 
 Install the local LangGraph Server
