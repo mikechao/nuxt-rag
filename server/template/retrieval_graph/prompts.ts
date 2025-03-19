@@ -93,4 +93,8 @@ bank, not part of the conversation with the user.
 export const GENERATE_QUERIES_SYSTEM_PROMPT = `\
 Generate 3 search queries to search for to answer the user's question. \
 These search queries should be diverse in nature - do not generate \
-repetitive ones.`
+repetitive ones. \
+Make sure your queries fit into the output schema below:
+<output_schema>
+{output_schema}
+<output_schema>`

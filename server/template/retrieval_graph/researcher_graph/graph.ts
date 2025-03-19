@@ -6,9 +6,10 @@
 
 import type { RunnableConfig } from '@langchain/core/runnables'
 import type { QueryStateAnnotation } from './state.js'
-
+import { PromptTemplate } from '@langchain/core/prompts'
 import { END, Send, START, StateGraph } from '@langchain/langgraph'
 import { z } from 'zod'
+import { zodToJsonSchema } from 'zod-to-json-schema'
 import { makeRetriever } from '../../shared/retrieval.js'
 import { loadChatModel } from '../../shared/utils.js'
 import { ensureAgentConfiguration } from '../configuration.js'
@@ -21,13 +22,16 @@ async function generateQueries(
   const Response = z.object({
     queries: z.array(z.string()),
   })
-
   const configuration = ensureAgentConfiguration(config)
   const model = (
     await loadChatModel(configuration.queryModel, configuration.useCache)
   ).withStructuredOutput(Response)
+  const systemContent = await PromptTemplate.fromTemplate(configuration.generateQueriesSystemPrompt)
+    .format({
+      output_schema: JSON.stringify(zodToJsonSchema(Response), null, 2),
+    })
   const messages: { role: string, content: string }[] = [
-    { role: 'system', content: configuration.generateQueriesSystemPrompt },
+    { role: 'system', content: systemContent },
     { role: 'human', content: state.question },
   ]
   const response = await model.invoke(messages)
