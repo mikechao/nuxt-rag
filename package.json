@@ -13,6 +13,7 @@
   "dependencies": {
     "@browserbasehq/sdk": "1.1.5",
     "@browserbasehq/stagehand": "^1.0.0",
+    "@langchain/anthropic": "^0.3.15",
     "@langchain/community": "^0.3.35",
     "@langchain/core": "^0.3.42",
     "@langchain/langgraph": "^0.2.55",
