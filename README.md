@@ -35,3 +35,4 @@ $ langgraphjs dev
 ```
 
 A browser should be launched to show the LangGraph studio
+![LangGraph Studio](./public/langgraphStudio.png "LangGraph Studio")
