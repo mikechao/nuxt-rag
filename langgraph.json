@@ -2,7 +2,8 @@
   "node_version": "20",
   "graphs": {
     "retrieval_graph": "./server/template/retrieval_graph/graph.ts:graph",
-    "indexer": "./server/template/index_graph/graph.ts:graph"
+    "indexer": "./server/template/index_graph/graph.ts:graph",
+    "crag": "./server/crag/graph.ts:graph"
   },
   "env": ".env"
 }
