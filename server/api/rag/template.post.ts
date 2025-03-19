@@ -22,6 +22,7 @@ export default defineLazyEventHandler(async () => {
     }
 
     const { question, queryModel, useCache } = parsedBody.data
+    consola.debug({ tag: 'eventHandler', message: `Invoking graph with question: ${question}, queryModel: ${queryModel}, useCache: ${useCache}` })
     const inputs = { messages: [{ role: 'user', content: question }] }
     const config = { configurable: { queryModel: queryModel as string, useCache } }
     const result = await graph.withConfig(config).invoke(inputs)

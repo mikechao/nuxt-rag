@@ -7,8 +7,9 @@ import {
   START,
   StateGraph,
 } from '@langchain/langgraph'
-import { z } from 'zod'
+import consola from 'consola'
 
+import { z } from 'zod'
 import { formatDocs, loadChatModel } from '../shared/utils.js'
 import {
   AgentConfigurationAnnotation,
@@ -21,6 +22,7 @@ async function analyzeAndRouteQuery(
   state: typeof AgentStateAnnotation.State,
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
+  consola.debug({ tag: 'analyzeAndRouteQuery', message: `First message: ${state.messages[0].content}` })
   const configuration = ensureAgentConfiguration(config)
   const model = await loadChatModel(configuration.queryModel, configuration.useCache)
   const messages = [
@@ -34,6 +36,7 @@ async function analyzeAndRouteQuery(
     })
     .describe('Classify user query.')
   const response = await model.withStructuredOutput(Router).invoke(messages)
+  consola.debug({ tag: 'analyzeAndRouteQuery', message: `Router: ${JSON.stringify(response)}` })
   return { router: response }
 }
 
@@ -59,6 +62,7 @@ async function askForMoreInfo(
   state: typeof AgentStateAnnotation.State,
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
+  consola.debug({ tag: 'askForMoreInfo', message: `running` })
   const configuration = ensureAgentConfiguration(config)
   const model = await loadChatModel(configuration.queryModel, configuration.useCache)
   const systemPrompt = configuration.moreInfoSystemPrompt.replace(
@@ -70,6 +74,7 @@ async function askForMoreInfo(
     ...state.messages,
   ]
   const response = await model.invoke(messages)
+  consola.debug({ tag: 'askForMoreInfo', message: `response: ${response.content}` })
   return { messages: [response] }
 }
 
@@ -77,6 +82,7 @@ async function respondToGeneralQuery(
   state: typeof AgentStateAnnotation.State,
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
+  consola.debug({ tag: 'respondToGeneralQuery', message: `running` })
   const configuration = ensureAgentConfiguration(config)
   const model = await loadChatModel(configuration.queryModel, configuration.useCache)
   const systemPrompt = configuration.generalSystemPrompt.replace(
@@ -88,6 +94,7 @@ async function respondToGeneralQuery(
     ...state.messages,
   ]
   const response = await model.invoke(messages)
+  consola.debug({ tag: 'respondToGeneralQuery', message: `response: ${response.content}` })
   return { messages: [response] }
 }
 
@@ -95,6 +102,7 @@ async function createResearchPlan(
   state: typeof AgentStateAnnotation.State,
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
+  consola.debug({ tag: 'createResearchPlan', message: `running` })
   const Plan = z
     .object({
       steps: z.array(z.string()),
@@ -110,6 +118,7 @@ async function createResearchPlan(
     ...state.messages,
   ]
   const response = await model.invoke(messages)
+  consola.debug({ tag: 'createResearchPlan', message: `response: ${JSON.stringify(response.steps)}` })
   return { steps: response.steps, documents: 'delete' }
 }
 
@@ -117,10 +126,12 @@ async function conductResearch(
   state: typeof AgentStateAnnotation.State,
   config: LangGraphRunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
+  consola.debug({ tag: 'conductResearch', message: `running step ${state.steps[0]}` })
   const result = await researcherGraph.invoke(
     { question: state.steps[0] },
     { ...config },
   )
+  consola.debug({ tag: 'conductResearch', message: `documents: ${result.documents.length}` })
   return { documents: result.documents, steps: state.steps.slice(1) }
 }
 
@@ -134,6 +145,7 @@ async function respond(
   state: typeof AgentStateAnnotation.State,
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
+  consola.debug({ tag: 'respond', message: `running` })
   const configuration = ensureAgentConfiguration(config)
   const model = await loadChatModel(configuration.responseModel, configuration.useCache)
   const context = formatDocs(state.documents)
@@ -143,6 +155,7 @@ async function respond(
   )
   const messages = [{ role: 'system', content: prompt }, ...state.messages]
   const response = await model.invoke(messages)
+  consola.debug({ tag: 'respond', message: `response: ${response.content}` })
   return { messages: [response] }
 }
 
