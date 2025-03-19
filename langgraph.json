@@ -3,7 +3,8 @@
   "graphs": {
     "retrieval_graph": "./server/template/retrieval_graph/graph.ts:graph",
     "indexer": "./server/template/index_graph/graph.ts:graph",
-    "crag": "./server/crag/graph.ts:graph"
+    "crag": "./server/crag/graph.ts:graph",
+    "qa-rag": "./server/qarag/graph.ts:graph"
   },
   "env": ".env"
 }
