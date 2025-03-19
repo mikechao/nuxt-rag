@@ -11,4 +11,11 @@ export default defineNuxtConfig({
     postgresURL: process.env.NUXT_POSTGRES_URL,
     tavilyAPIKey: process.env.NUXT_TAVILY_API_KEY,
   },
+  nitro: {
+    esbuild: {
+      options: {
+        target: 'es2022',
+      },
+    },
+  },
 })
