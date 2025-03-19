@@ -63,6 +63,11 @@ export const AgentConfigurationAnnotation = Annotation.Root({
    * The system prompt used for generating responses.
    */
   responseSystemPrompt: Annotation<string>,
+
+  /**
+   * Whether to use the cache for the model used by the agent
+   */
+  useCache: Annotation<boolean>,
 })
 
 /**
@@ -95,5 +100,6 @@ export function ensureAgentConfiguration(
       || GENERATE_QUERIES_SYSTEM_PROMPT,
     responseSystemPrompt:
       configurable.responseSystemPrompt || RESPONSE_SYSTEM_PROMPT,
+    useCache: configurable.useCache || false,
   }
 }

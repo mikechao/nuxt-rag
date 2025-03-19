@@ -6,6 +6,7 @@ export default defineLazyEventHandler(async () => {
   const inputSchema = z.object({
     question: z.string().min(1),
     queryModel: z.enum(['openai/gpt-4o-mini', 'anthropic/claude-3-haiku-20240307']).optional().default('openai/gpt-4o-mini'),
+    useCache: z.boolean().optional().default(true),
   })
   return defineEventHandler(async (event) => {
     const body = await readBody(event)
@@ -20,9 +21,9 @@ export default defineLazyEventHandler(async () => {
       })
     }
 
-    const { question, queryModel } = parsedBody.data
+    const { question, queryModel, useCache } = parsedBody.data
     const inputs = { messages: [{ role: 'user', content: question }] }
-    const config = { configurable: { queryModel: queryModel as string } }
+    const config = { configurable: { queryModel: queryModel as string, useCache } }
     const result = await graph.withConfig(config).invoke(inputs)
     return result.messages[result.messages.length - 1].content
   })

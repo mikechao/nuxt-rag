@@ -22,7 +22,7 @@ async function analyzeAndRouteQuery(
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
   const configuration = ensureAgentConfiguration(config)
-  const model = await loadChatModel(configuration.queryModel, true)
+  const model = await loadChatModel(configuration.queryModel, configuration.useCache)
   const messages = [
     { role: 'system', content: configuration.routerSystemPrompt },
     ...state.messages,
@@ -60,7 +60,7 @@ async function askForMoreInfo(
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
   const configuration = ensureAgentConfiguration(config)
-  const model = await loadChatModel(configuration.queryModel, true)
+  const model = await loadChatModel(configuration.queryModel, configuration.useCache)
   const systemPrompt = configuration.moreInfoSystemPrompt.replace(
     '{logic}',
     state.router.logic,
@@ -78,7 +78,7 @@ async function respondToGeneralQuery(
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
   const configuration = ensureAgentConfiguration(config)
-  const model = await loadChatModel(configuration.queryModel, true)
+  const model = await loadChatModel(configuration.queryModel, configuration.useCache)
   const systemPrompt = configuration.generalSystemPrompt.replace(
     '{logic}',
     state.router.logic,
@@ -103,7 +103,7 @@ async function createResearchPlan(
 
   const configuration = ensureAgentConfiguration(config)
   const model = (
-    await loadChatModel(configuration.queryModel, true)
+    await loadChatModel(configuration.queryModel, configuration.useCache)
   ).withStructuredOutput(Plan)
   const messages = [
     { role: 'system', content: configuration.researchPlanSystemPrompt },
@@ -135,7 +135,7 @@ async function respond(
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
   const configuration = ensureAgentConfiguration(config)
-  const model = await loadChatModel(configuration.responseModel, true)
+  const model = await loadChatModel(configuration.responseModel, configuration.useCache)
   const context = formatDocs(state.documents)
   const prompt = configuration.responseSystemPrompt.replace(
     '{context}',
