@@ -1,56 +1,22 @@
 import type { DocumentInterface } from '@langchain/core/documents'
-import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import type { RunnableConfig } from '@langchain/core/runnables'
 import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
-import { PGVectorStore } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import { StringOutputParser } from '@langchain/core/output_parsers'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { END, START, StateGraph } from '@langchain/langgraph'
-import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai'
 import consola from 'consola'
 import { formatDocumentsAsString } from 'langchain/util/document'
-import pg from 'pg'
 import { z } from 'zod'
+import { makeEmbeddings, makeModel, makeVectorStore } from '../shared/utils'
 import { GraphState } from './state'
 
 // https://langchain-ai.github.io/langgraphjs/tutorials/rag/langgraph_crag
 
-async function makeEmbeddings() {
-  const embeddings = new OpenAIEmbeddings({
-    model: 'text-embedding-3-large',
-    dimensions: 3072,
-  })
-  return embeddings
-}
-
 async function makeRetriever() {
   const embeddings = await makeEmbeddings()
-  const { Pool } = pg
-  const pool = new Pool({
-    host: 'localhost',
-    user: 'dbuser',
-    password: 'dbpassword',
-    database: 'nuxtragdb',
-    port: 5432,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-  })
-  const vectorStore = await PGVectorStore.initialize(embeddings, {
-    pool,
-    tableName: 'rag_vectors',
-    dimensions: 3072,
-  })
+  const vectorStore = await makeVectorStore(embeddings)
   return vectorStore.asRetriever()
-}
-
-async function makeModel(): Promise<BaseChatModel> {
-  const model = new ChatOpenAI({
-    model: 'gpt-4o-mini',
-    temperature: 0,
-  })
-  return model
 }
 
 /**
